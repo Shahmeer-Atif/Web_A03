@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 interface Props {
   leadId: string;
@@ -29,17 +30,16 @@ export default function FollowUpPicker({ leadId, current }: Props) {
     const json = await res.json();
     setSaving(false);
     if (json.ok) {
-      setMsg("Saved");
+      toast.success("Follow-up scheduled");
       router.refresh();
     } else {
-      setMsg(json.error?.message ?? "Error");
+      toast.error(json.error?.message ?? "Failed to set follow-up");
     }
   };
 
   const clear = async () => {
     setValue("");
     setSaving(true);
-    setMsg("");
     const res = await fetch(`/api/leads/${leadId}/followup`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -47,8 +47,8 @@ export default function FollowUpPicker({ leadId, current }: Props) {
     });
     const json = await res.json();
     setSaving(false);
-    setMsg(json.ok ? "Cleared" : (json.error?.message ?? "Error"));
-    if (json.ok) router.refresh();
+    if (json.ok) { toast.success("Follow-up cleared"); router.refresh(); }
+    else toast.error(json.error?.message ?? "Failed to clear");
   };
 
   const isOverdue = current && new Date(current) < new Date();
@@ -75,7 +75,6 @@ export default function FollowUpPicker({ leadId, current }: Props) {
           </button>
         )}
       </div>
-      {msg && <p className="text-xs text-zinc-500">{msg}</p>}
     </div>
   );
 }

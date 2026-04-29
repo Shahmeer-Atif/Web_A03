@@ -31,7 +31,12 @@ interface Props {
 
 export default function LeadTable({ leads, role, basePath, onEdit, onDelete }: Props) {
   if (!leads.length) {
-    return <p className="py-12 text-center text-sm text-zinc-400">No leads found.</p>;
+    return (
+      <div className="rounded-xl border border-dashed border-zinc-300 bg-white py-16 text-center">
+        <p className="text-sm font-medium text-zinc-500">No leads yet</p>
+        <p className="mt-1 text-xs text-zinc-400">Create your first lead to get started.</p>
+      </div>
+    );
   }
 
   const fmt = (n: number) => new Intl.NumberFormat("en-PK", { notation: "compact", maximumFractionDigits: 1 }).format(n);
