@@ -2,6 +2,7 @@ import { auth } from "@/lib/auth";
 import { connectDB } from "@/lib/db";
 import { Lead } from "@/models/Lead";
 import LeadTable from "@/components/leads/LeadTable";
+import LeadEventRefresher from "@/components/shared/LeadEventRefresher";
 import type { LeadPriority, LeadStatus } from "@/types";
 import mongoose from "mongoose";
 
@@ -22,6 +23,7 @@ export default async function AgentHome() {
 
   return (
     <div className="space-y-5">
+      <LeadEventRefresher userId={session.user.id} role="agent" />
       <h1 className="text-2xl font-semibold">My Leads</h1>
 
       {overdue.length > 0 && (

@@ -13,6 +13,10 @@ import { logActivity } from "@/lib/logActivity";
 import { requireUser } from "@/lib/requireUser";
 import { createLeadSchema } from "@/lib/validators/lead";
 import { ok, fail, zodFields } from "@/lib/api";
+import { emitEvent } from "@/lib/emitEvent";
+import { sendMail } from "@/lib/email/mailer";
+import { newLeadEmail } from "@/lib/email/templates";
+import { User } from "@/models/User";
 import mongoose from "mongoose";
 
 // ── GET ──────────────────────────────────────────────────────────────────────
@@ -99,8 +103,25 @@ export async function POST(req: NextRequest) {
     meta: { name: lead.name, budget: lead.budget, priority: lead.priority },
   });
 
-  // TODO Phase 7: emit socket event "lead:created"
-  // TODO Phase 8: send new-lead email notification to admin
+  await emitEvent({ event: "lead:created", rooms: ["role:admin"], data: { leadId: lead._id.toString(), name: lead.name } });
+
+  // Email all admins about the new lead
+  const admins = await User.find({ role: "admin", isActive: true }).lean();
+  const appUrl = process.env.NEXTAUTH_URL ?? "http://localhost:3000";
+  for (const admin of admins) {
+    await sendMail({
+      to: admin.email,
+      ...newLeadEmail({
+        adminName: admin.name,
+        leadName: lead.name,
+        leadEmail: lead.email,
+        budget: lead.budget,
+        source: lead.source,
+        priority: lead.priority,
+        appUrl,
+      }),
+    });
+  }
 
   return ok(lead.toJSON(), 201);
 }
