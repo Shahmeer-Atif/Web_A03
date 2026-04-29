@@ -7,6 +7,7 @@ import LeadTable from "@/components/leads/LeadTable";
 import LeadFilters from "@/components/leads/LeadFilters";
 import LeadForm from "@/components/leads/LeadForm";
 import { TableSkeleton } from "@/components/ui/Skeleton";
+import ExportButton from "@/components/leads/ExportButton";
 import { useLeadEvents } from "@/hooks/useLeadEvents";
 
 interface Lead { _id: string; name: string; email: string; phone: string; propertyInterest: string; budget: number; status: string; priority: string; score: number; assignedTo?: { name: string } | null; createdAt: string; followUpAt?: string | null }
@@ -51,7 +52,10 @@ function LeadsContent() {
           <h1 className="text-2xl font-semibold">Leads</h1>
           <p className="text-sm text-zinc-500">{total} total</p>
         </div>
-        <button className="btn-primary" onClick={() => { setEditing(null); setShowForm(true); }}>+ New lead</button>
+        <div className="flex items-center gap-2">
+          <ExportButton />
+          <button className="btn-primary" onClick={() => { setEditing(null); setShowForm(true); }}>+ New lead</button>
+        </div>
       </div>
 
       <Suspense><LeadFilters /></Suspense>

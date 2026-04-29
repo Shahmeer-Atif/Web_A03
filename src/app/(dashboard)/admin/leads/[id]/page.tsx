@@ -10,6 +10,7 @@ import ActivityTimeline from "@/components/leads/ActivityTimeline";
 import LeadDetailActions from "@/components/leads/LeadDetailActions";
 import AssignAgent from "@/components/leads/AssignAgent";
 import FollowUpPicker from "@/components/leads/FollowUpPicker";
+import AISuggest from "@/components/leads/AISuggest";
 import { format } from "date-fns";
 import type { LeadPriority, LeadStatus } from "@/types";
 
@@ -75,6 +76,8 @@ export default async function AdminLeadDetail({ params }: { params: Promise<{ id
         leadId={id}
         currentAgentId={(lead.assignedTo as unknown as { _id: string } | null)?._id?.toString() ?? null}
       />
+
+      <AISuggest leadId={id} />
 
       <LeadDetailActions
         lead={JSON.parse(JSON.stringify(lead))}
