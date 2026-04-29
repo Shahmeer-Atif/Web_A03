@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 interface Agent {
   _id: string;
@@ -37,10 +38,10 @@ export default function AssignAgent({ leadId, currentAgentId }: Props) {
     const json = await res.json();
     setSaving(false);
     if (json.ok) {
-      setMsg("Saved");
+      toast.success("Agent assigned");
       router.refresh();
     } else {
-      setMsg(json.error?.message ?? "Error");
+      toast.error(json.error?.message ?? "Failed to assign");
     }
   };
 
@@ -62,7 +63,6 @@ export default function AssignAgent({ leadId, currentAgentId }: Props) {
           {saving ? "Saving…" : "Assign"}
         </button>
       </div>
-      {msg && <p className="text-xs text-zinc-500">{msg}</p>}
     </div>
   );
 }

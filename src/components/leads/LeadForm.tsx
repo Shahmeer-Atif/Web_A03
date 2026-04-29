@@ -4,6 +4,7 @@
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { toast } from "sonner";
 import { createLeadSchema, type CreateLeadInput } from "@/lib/validators/lead";
 
 interface Agent { _id: string; name: string; email: string }
@@ -38,7 +39,13 @@ export default function LeadForm({ onClose, onSaved, role, existing }: Props) {
     const method = isEdit ? "PATCH" : "POST";
     const res = await fetch(url, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(values) });
     const json = await res.json();
-    if (!json.ok) { setServerError(json.error?.message ?? "Failed"); return; }
+    if (!json.ok) {
+      const msg = json.error?.message ?? "Failed";
+      setServerError(msg);
+      toast.error(msg);
+      return;
+    }
+    toast.success(isEdit ? "Lead updated" : "Lead created");
     onSaved();
     onClose();
   };

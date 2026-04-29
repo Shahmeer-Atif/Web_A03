@@ -2,9 +2,11 @@
 import { useEffect, useState, useCallback, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
+import { toast } from "sonner";
 import LeadTable from "@/components/leads/LeadTable";
 import LeadFilters from "@/components/leads/LeadFilters";
 import LeadForm from "@/components/leads/LeadForm";
+import { TableSkeleton } from "@/components/ui/Skeleton";
 import { useLeadEvents } from "@/hooks/useLeadEvents";
 
 interface Lead { _id: string; name: string; email: string; phone: string; propertyInterest: string; budget: number; status: string; priority: string; score: number; assignedTo?: { name: string } | null; createdAt: string; followUpAt?: string | null }
@@ -35,7 +37,10 @@ function LeadsContent() {
   });
 
   const handleDelete = async (id: string) => {
-    await fetch(`/api/leads/${id}`, { method: "DELETE" });
+    const res = await fetch(`/api/leads/${id}`, { method: "DELETE" });
+    const json = await res.json();
+    if (json.ok) toast.success("Lead deleted");
+    else toast.error("Failed to delete lead");
     fetch_();
   };
 
@@ -71,7 +76,7 @@ function LeadsContent() {
       })()}
 
       {loading ? (
-        <p className="py-10 text-center text-sm text-zinc-400">Loading…</p>
+        <TableSkeleton rows={6} />
       ) : (
         <LeadTable
           leads={leads as never}

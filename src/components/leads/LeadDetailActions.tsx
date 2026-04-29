@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import LeadForm from "./LeadForm";
 import type { CreateLeadInput } from "@/lib/validators/lead";
 
@@ -16,8 +17,14 @@ export default function LeadDetailActions({ lead, role }: Props) {
 
   const handleDelete = async () => {
     if (!confirm("Delete this lead permanently?")) return;
-    await fetch(`/api/leads/${lead._id}`, { method: "DELETE" });
-    router.push(role === "admin" ? "/admin/leads" : "/agent");
+    const res = await fetch(`/api/leads/${lead._id}`, { method: "DELETE" });
+    const json = await res.json();
+    if (json.ok) {
+      toast.success("Lead deleted");
+      router.push(role === "admin" ? "/admin/leads" : "/agent");
+    } else {
+      toast.error(json.error?.message ?? "Failed to delete");
+    }
   };
 
   return (
