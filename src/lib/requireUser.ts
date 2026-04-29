@@ -5,6 +5,7 @@
 import "server-only";
 import { auth } from "@/lib/auth";
 import { fail } from "@/lib/api";
+import { checkRateLimit } from "@/lib/rateLimit";
 import type { Role } from "@/types";
 import type { NextResponse } from "next/server";
 import type { ApiResult } from "@/types";
@@ -24,6 +25,13 @@ export async function requireUser(requiredRole?: Role): Promise<RequireUserResul
 
   if (requiredRole && session.user.role !== requiredRole) {
     return { user: null, error: fail("forbidden", "Access denied", 403) };
+  }
+
+  const rl = checkRateLimit(session.user.id, session.user.role);
+  if (!rl.allowed) {
+    const res = fail("rate_limited", "Too many requests. Please slow down.", 429);
+    res.headers.set("Retry-After", String(rl.retryAfterSeconds));
+    return { user: null, error: res };
   }
 
   return {
