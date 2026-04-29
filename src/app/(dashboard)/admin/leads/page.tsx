@@ -1,14 +1,17 @@
 "use client";
 import { useEffect, useState, useCallback, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
+import { useSession } from "next-auth/react";
 import LeadTable from "@/components/leads/LeadTable";
 import LeadFilters from "@/components/leads/LeadFilters";
 import LeadForm from "@/components/leads/LeadForm";
+import { useLeadEvents } from "@/hooks/useLeadEvents";
 
 interface Lead { _id: string; name: string; email: string; phone: string; propertyInterest: string; budget: number; status: string; priority: string; score: number; assignedTo?: { name: string } | null; createdAt: string; followUpAt?: string | null }
 
 function LeadsContent() {
   const sp = useSearchParams();
+  const { data: session } = useSession();
   const [leads, setLeads] = useState<Lead[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -24,6 +27,12 @@ function LeadsContent() {
   }, [sp]);
 
   useEffect(() => { fetch_(); }, [fetch_]);
+
+  useLeadEvents({
+    userId: session?.user?.id ?? "",
+    role: "admin",
+    onEvent: () => fetch_(),
+  });
 
   const handleDelete = async (id: string) => {
     await fetch(`/api/leads/${id}`, { method: "DELETE" });

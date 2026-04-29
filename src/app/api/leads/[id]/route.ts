@@ -10,6 +10,7 @@ import { logActivity } from "@/lib/logActivity";
 import { requireUser } from "@/lib/requireUser";
 import { adminUpdateSchema, agentUpdateSchema } from "@/lib/validators/lead";
 import { ok, fail, zodFields } from "@/lib/api";
+import { emitEvent } from "@/lib/emitEvent";
 import mongoose from "mongoose";
 import { computeScore } from "@/lib/scoring";
 import type { ActivityAction } from "@/types";
@@ -121,7 +122,14 @@ export async function PATCH(req: NextRequest, { params }: Ctx) {
     await logActivity({ leadId: lead._id, actorId: user.id, actorName: user.name, ...act });
   }
 
-  // TODO Phase 7: emit socket event "lead:updated"
+  const rooms = ["role:admin"];
+  if (lead.assignedTo) rooms.push(`user:${lead.assignedTo.toString()}`);
+  const hasPriorityChange = activities.some(a => a.action === "priority_changed");
+  await emitEvent({
+    event: hasPriorityChange ? "lead:priority_changed" : "lead:updated",
+    rooms,
+    data: { leadId: id },
+  });
 
   return ok(lead.toJSON());
 }

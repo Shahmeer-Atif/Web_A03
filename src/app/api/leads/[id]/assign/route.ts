@@ -11,6 +11,9 @@ import { User } from "@/models/User";
 import { logActivity } from "@/lib/logActivity";
 import { requireUser } from "@/lib/requireUser";
 import { ok, fail } from "@/lib/api";
+import { emitEvent } from "@/lib/emitEvent";
+import { sendMail } from "@/lib/email/mailer";
+import { leadAssignedEmail } from "@/lib/email/templates";
 import { z } from "zod";
 import mongoose from "mongoose";
 
@@ -63,8 +66,28 @@ export async function POST(req: NextRequest, { params }: Ctx) {
     meta: { agentId: parsed.data.agentId },
   });
 
-  // TODO Phase 7: emit socket event "lead:assigned"
-  // TODO Phase 8: send assignment email to agent
+  const rooms = ["role:admin"];
+  if (parsed.data.agentId) rooms.push(`user:${parsed.data.agentId}`);
+  await emitEvent({ event: "lead:assigned", rooms, data: { leadId: id, agentId: parsed.data.agentId } });
+  if (parsed.data.agentId) {
+    const agent = await User.findById(parsed.data.agentId).lean();
+    if (agent) {
+      const appUrl = process.env.NEXTAUTH_URL ?? "http://localhost:3000";
+      await sendMail({
+        to: agent.email,
+        ...leadAssignedEmail({
+          agentName: agent.name,
+          leadName: lead.name,
+          leadEmail: lead.email,
+          leadPhone: lead.phone,
+          propertyInterest: lead.propertyInterest,
+          budget: lead.budget,
+          appUrl,
+          leadId: id,
+        }),
+      });
+    }
+  }
 
   const populated = await Lead.findById(id).populate("assignedTo", "name email").lean();
   return ok(populated);
