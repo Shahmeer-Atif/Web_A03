@@ -8,6 +8,7 @@ import StatusBadge from "@/components/leads/StatusBadge";
 import WhatsAppButton from "@/components/leads/WhatsAppButton";
 import ActivityTimeline from "@/components/leads/ActivityTimeline";
 import LeadDetailActions from "@/components/leads/LeadDetailActions";
+import AssignAgent from "@/components/leads/AssignAgent";
 import { format } from "date-fns";
 import type { LeadPriority, LeadStatus } from "@/types";
 
@@ -63,6 +64,11 @@ export default async function AdminLeadDetail({ params }: { params: Promise<{ id
           <p className="text-sm text-zinc-700 whitespace-pre-wrap">{lead.notes}</p>
         </div>
       )}
+
+      <AssignAgent
+        leadId={id}
+        currentAgentId={(lead.assignedTo as unknown as { _id: string } | null)?._id?.toString() ?? null}
+      />
 
       <LeadDetailActions
         lead={JSON.parse(JSON.stringify(lead))}
