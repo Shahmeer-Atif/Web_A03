@@ -42,6 +42,25 @@ function LeadsContent() {
 
       <Suspense><LeadFilters /></Suspense>
 
+      {(() => {
+        const overdue = leads.filter(l => l.followUpAt && new Date(l.followUpAt) < new Date() && !l.status.startsWith("closed"));
+        const stale = leads.filter(l => !overdue.includes(l) && new Date((l as Lead & { lastActivityAt?: string }).lastActivityAt ?? l.createdAt) < new Date(Date.now() - 7 * 86400_000) && !l.status.startsWith("closed"));
+        return (
+          <>
+            {overdue.length > 0 && (
+              <div className="rounded-lg bg-rose-50 border border-rose-200 px-4 py-3 text-sm text-rose-700">
+                ⚠ {overdue.length} overdue follow-up{overdue.length > 1 ? "s" : ""}
+              </div>
+            )}
+            {stale.length > 0 && (
+              <div className="rounded-lg bg-amber-50 border border-amber-200 px-4 py-3 text-sm text-amber-700">
+                ⏳ {stale.length} stale lead{stale.length > 1 ? "s" : ""} (no activity in 7 days)
+              </div>
+            )}
+          </>
+        );
+      })()}
+
       {loading ? (
         <p className="py-10 text-center text-sm text-zinc-400">Loading…</p>
       ) : (
