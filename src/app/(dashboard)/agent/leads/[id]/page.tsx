@@ -9,6 +9,7 @@ import WhatsAppButton from "@/components/leads/WhatsAppButton";
 import ActivityTimeline from "@/components/leads/ActivityTimeline";
 import LeadDetailActions from "@/components/leads/LeadDetailActions";
 import FollowUpPicker from "@/components/leads/FollowUpPicker";
+import AISuggest from "@/components/leads/AISuggest";
 import { format } from "date-fns";
 import type { LeadPriority, LeadStatus } from "@/types";
 
@@ -68,6 +69,8 @@ export default async function AgentLeadDetail({ params }: { params: Promise<{ id
         leadId={id}
         current={lead.followUpAt ? lead.followUpAt.toISOString() : null}
       />
+
+      <AISuggest leadId={id} />
 
       <LeadDetailActions
         lead={JSON.parse(JSON.stringify(lead))}
