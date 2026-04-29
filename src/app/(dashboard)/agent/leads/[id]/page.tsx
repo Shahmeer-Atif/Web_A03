@@ -8,6 +8,7 @@ import StatusBadge from "@/components/leads/StatusBadge";
 import WhatsAppButton from "@/components/leads/WhatsAppButton";
 import ActivityTimeline from "@/components/leads/ActivityTimeline";
 import LeadDetailActions from "@/components/leads/LeadDetailActions";
+import FollowUpPicker from "@/components/leads/FollowUpPicker";
 import { format } from "date-fns";
 import type { LeadPriority, LeadStatus } from "@/types";
 
@@ -62,6 +63,11 @@ export default async function AgentLeadDetail({ params }: { params: Promise<{ id
           <p className="text-sm text-zinc-700 whitespace-pre-wrap">{lead.notes}</p>
         </div>
       )}
+
+      <FollowUpPicker
+        leadId={id}
+        current={lead.followUpAt ? lead.followUpAt.toISOString() : null}
+      />
 
       <LeadDetailActions
         lead={JSON.parse(JSON.stringify(lead))}
