@@ -85,7 +85,9 @@ export default async function AdminLeadDetail({ params }: { params: Promise<{ id
         userId={session?.user?.id ?? ""}
       />
 
-      <ActivityTimeline activities={JSON.parse(JSON.stringify(activities))} />
+      <div className="rounded-lg border border-zinc-200 bg-white p-5">
+        <ActivityTimeline activities={JSON.parse(JSON.stringify(activities))} />
+      </div>
     </div>
   );
 }

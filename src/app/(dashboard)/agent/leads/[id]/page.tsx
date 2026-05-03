@@ -10,6 +10,7 @@ import ActivityTimeline from "@/components/leads/ActivityTimeline";
 import LeadDetailActions from "@/components/leads/LeadDetailActions";
 import FollowUpPicker from "@/components/leads/FollowUpPicker";
 import AISuggest from "@/components/leads/AISuggest";
+import StatusUpdater from "@/components/leads/StatusUpdater";
 import { format } from "date-fns";
 import type { LeadPriority, LeadStatus } from "@/types";
 
@@ -25,7 +26,10 @@ export default async function AgentLeadDetail({ params }: { params: Promise<{ id
   ]);
 
   if (!lead) notFound();
-  if (lead.assignedTo?.toString() !== session.user.id) redirect("/agent");
+  const assignedId = lead.assignedTo
+    ? (lead.assignedTo as unknown as { _id: { toString(): string } })._id?.toString() ?? lead.assignedTo.toString()
+    : null;
+  if (assignedId !== session.user.id) redirect("/agent");
 
   const fmt = (n: number) => new Intl.NumberFormat("en-PK", { maximumFractionDigits: 0 }).format(n);
 
@@ -65,6 +69,8 @@ export default async function AgentLeadDetail({ params }: { params: Promise<{ id
         </div>
       )}
 
+      <StatusUpdater leadId={id} current={lead.status} />
+
       <FollowUpPicker
         leadId={id}
         current={lead.followUpAt ? lead.followUpAt.toISOString() : null}
@@ -78,7 +84,9 @@ export default async function AgentLeadDetail({ params }: { params: Promise<{ id
         userId={session.user.id}
       />
 
-      <ActivityTimeline activities={JSON.parse(JSON.stringify(activities))} />
+      <div className="rounded-lg border border-zinc-200 bg-white p-5">
+        <ActivityTimeline activities={JSON.parse(JSON.stringify(activities))} />
+      </div>
     </div>
   );
 }
