@@ -20,7 +20,7 @@ export const createLeadSchema = z.object({
   source: z.enum(SOURCES, { error: "Invalid source" }),
   notes: z.string().trim().optional().default(""),
   assignedTo: z.string().nullable().optional(),
-  followUpAt: z.string().datetime().nullable().optional(),
+  followUpAt: z.union([z.string().datetime(), z.literal("")]).nullable().optional().transform(v => v === "" ? null : v),
 });
 
 export type CreateLeadInput = z.infer<typeof createLeadSchema>;
@@ -36,7 +36,7 @@ export const adminUpdateSchema = z.object({
   status: z.enum(STATUSES).optional(),
   notes: z.string().trim().optional(),
   assignedTo: z.string().nullable().optional(),
-  followUpAt: z.string().datetime().nullable().optional(),
+  followUpAt: z.union([z.string().datetime(), z.literal("")]).nullable().optional().transform(v => v === "" ? null : v),
 });
 
 export type AdminUpdateInput = z.infer<typeof adminUpdateSchema>;
@@ -45,7 +45,7 @@ export type AdminUpdateInput = z.infer<typeof adminUpdateSchema>;
 export const agentUpdateSchema = z.object({
   status: z.enum(STATUSES).optional(),
   notes: z.string().trim().optional(),
-  followUpAt: z.string().datetime().nullable().optional(),
+  followUpAt: z.union([z.string().datetime(), z.literal("")]).nullable().optional().transform(v => v === "" ? null : v),
 });
 
 export type AgentUpdateInput = z.infer<typeof agentUpdateSchema>;
