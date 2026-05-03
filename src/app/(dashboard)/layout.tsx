@@ -4,6 +4,7 @@ import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import SignOutButton from "@/components/shared/SignOutButton";
+import ChatBox from "@/components/shared/ChatBox";
 import { Menu, X, LayoutDashboard, Users, BarChart2, ListFilter } from "lucide-react";
 
 const adminNav = [
@@ -100,6 +101,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       </header>
 
       <main className="mx-auto max-w-6xl px-4 py-8">{children}</main>
+      <ChatBox />
     </div>
   );
 }
