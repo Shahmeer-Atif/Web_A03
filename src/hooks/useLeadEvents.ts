@@ -6,7 +6,7 @@ import { useEffect, useRef } from "react";
 import { io as socketIO, type Socket } from "socket.io-client";
 
 const SOCKET_URL = process.env.NEXT_PUBLIC_SOCKET_URL ?? "http://localhost:4000";
-const POLL_INTERVAL = 3000;
+const POLL_INTERVAL = 30000; // 30s — only used when socket is unavailable
 const CONNECT_TIMEOUT = 5000;
 
 type LeadEvent = "lead:created" | "lead:assigned" | "lead:updated" | "lead:priority_changed";
