@@ -7,7 +7,8 @@ export type LeadEvent =
   | "lead:created"
   | "lead:assigned"
   | "lead:updated"
-  | "lead:priority_changed";
+  | "lead:priority_changed"
+  | "chat:message";
 
 interface EmitPayload {
   event: LeadEvent;
