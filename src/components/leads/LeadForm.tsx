@@ -7,6 +7,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { createLeadSchema, type CreateLeadInput } from "@/lib/validators/lead";
 
+// Strip followUpAt from client-side validation — we convert it manually in onSubmit
+const formSchema = createLeadSchema.omit({ followUpAt: true });
+
 interface Agent { _id: string; name: string; email: string }
 interface Props {
   onClose: () => void;
@@ -24,7 +27,7 @@ export default function LeadForm({ onClose, onSaved, role, existing }: Props) {
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<any>({
-    resolver: zodResolver(createLeadSchema),
+    resolver: zodResolver(formSchema),
     defaultValues: existing ?? {},
   });
 
@@ -35,6 +38,9 @@ export default function LeadForm({ onClose, onSaved, role, existing }: Props) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const onSubmit = async (values: any) => {
     setServerError(null);
+    // Convert datetime-local string to ISO (or null if empty)
+    if (values.followUpAt) values.followUpAt = new Date(values.followUpAt).toISOString();
+    else values.followUpAt = null;
     const url = isEdit ? `/api/leads/${existing!._id}` : "/api/leads";
     const method = isEdit ? "PATCH" : "POST";
     const res = await fetch(url, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(values) });

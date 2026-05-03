@@ -2,22 +2,15 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { Check } from "lucide-react";
 
 const STATUSES = [
-  { value: "new", label: "New" },
-  { value: "contacted", label: "Contacted" },
-  { value: "in-progress", label: "In Progress" },
-  { value: "closed-won", label: "Closed Won" },
-  { value: "closed-lost", label: "Closed Lost" },
+  { value: "new", label: "New", bg: "bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100", active: "bg-blue-600 text-white border-blue-600" },
+  { value: "contacted", label: "Contacted", bg: "bg-violet-50 text-violet-700 border-violet-200 hover:bg-violet-100", active: "bg-violet-600 text-white border-violet-600" },
+  { value: "in-progress", label: "In Progress", bg: "bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100", active: "bg-amber-500 text-white border-amber-500" },
+  { value: "closed-won", label: "Closed Won", bg: "bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100", active: "bg-emerald-600 text-white border-emerald-600" },
+  { value: "closed-lost", label: "Closed Lost", bg: "bg-rose-50 text-rose-700 border-rose-200 hover:bg-rose-100", active: "bg-rose-600 text-white border-rose-600" },
 ] as const;
-
-const COLORS: Record<string, string> = {
-  "new": "bg-blue-100 text-blue-700 border-blue-200",
-  "contacted": "bg-purple-100 text-purple-700 border-purple-200",
-  "in-progress": "bg-amber-100 text-amber-700 border-amber-200",
-  "closed-won": "bg-green-100 text-green-700 border-green-200",
-  "closed-lost": "bg-red-100 text-red-700 border-red-200",
-};
 
 export default function StatusUpdater({ leadId, current }: { leadId: string; current: string }) {
   const router = useRouter();
@@ -33,34 +26,31 @@ export default function StatusUpdater({ leadId, current }: { leadId: string; cur
     });
     const json = await res.json();
     setSaving(false);
-    if (json.ok) {
-      toast.success(`Status updated to "${status}"`);
-      router.refresh();
-    } else {
-      toast.error(json.error?.message ?? "Failed to update status");
-    }
+    if (json.ok) { toast.success(`Status → ${status}`); router.refresh(); }
+    else toast.error(json.error?.message ?? "Failed");
   };
 
   return (
-    <div className="rounded-lg border border-zinc-200 bg-white p-4 space-y-3">
-      <p className="text-xs font-semibold uppercase tracking-wider text-zinc-500">Update Status</p>
+    <div className="card p-5">
+      <p className="section-title mb-3">Update Status</p>
       <div className="flex flex-wrap gap-2">
-        {STATUSES.map(s => (
-          <button
-            key={s.value}
-            onClick={() => update(s.value)}
-            disabled={saving}
-            className={`rounded-full border px-3 py-1.5 text-xs font-medium transition-all
-              ${current === s.value
-                ? `${COLORS[s.value]} ring-2 ring-offset-1 ring-current`
-                : "bg-zinc-50 border-zinc-200 text-zinc-500 hover:bg-zinc-100"
+        {STATUSES.map(s => {
+          const isActive = current === s.value;
+          return (
+            <button
+              key={s.value}
+              onClick={() => update(s.value)}
+              disabled={saving}
+              className={`flex items-center gap-1.5 rounded-lg border px-3 py-2 text-xs font-semibold transition-all disabled:opacity-60 disabled:cursor-not-allowed ${
+                isActive ? s.active : s.bg
               }`}
-          >
-            {current === s.value && "✓ "}{s.label}
-          </button>
-        ))}
+            >
+              {isActive && <Check size={12} />}
+              {s.label}
+            </button>
+          );
+        })}
       </div>
-      {saving && <p className="text-xs text-zinc-400">Saving…</p>}
     </div>
   );
 }
