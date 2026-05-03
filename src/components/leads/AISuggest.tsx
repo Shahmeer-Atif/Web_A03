@@ -16,7 +16,7 @@ export default function AISuggest({ leadId }: { leadId: string }) {
       if (json.ok) {
         setSuggestion(json.data.suggestion);
       } else if (json.error?.code === "NO_AI") {
-        toast.error("AI not configured — add ANTHROPIC_API_KEY to .env.local");
+        toast.error("AI not configured — add GEMINI_API_KEY to .env.local");
       } else {
         toast.error(json.error?.message ?? "Failed to generate suggestion");
       }
