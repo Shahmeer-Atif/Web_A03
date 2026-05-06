@@ -6,11 +6,14 @@ import "server-only";
 import { type NextRequest } from "next/server";
 import { connectDB } from "@/lib/db";
 import { Lead } from "@/models/Lead";
+import { User } from "@/models/User";
 import { logActivity } from "@/lib/logActivity";
 import { requireUser } from "@/lib/requireUser";
 import { adminUpdateSchema, agentUpdateSchema } from "@/lib/validators/lead";
 import { ok, fail, zodFields } from "@/lib/api";
 import { emitEvent } from "@/lib/emitEvent";
+import { sendMail } from "@/lib/email/mailer";
+import { leadAssignedEmail } from "@/lib/email/templates";
 import mongoose from "mongoose";
 import { computeScore } from "@/lib/scoring";
 import type { ActivityAction } from "@/types";
@@ -116,6 +119,24 @@ export async function PATCH(req: NextRequest, { params }: Ctx) {
   }
   lead.lastActivityAt = new Date();
   await lead.save();
+
+  // Email agent when lead is assigned/reassigned
+  if (user.role === "admin" && updates.assignedTo) {
+    const agent = await User.findById(updates.assignedTo).select("name email").lean();
+    if (agent?.email) {
+      const tpl = leadAssignedEmail({
+        agentName: agent.name,
+        leadName: lead.name,
+        leadEmail: lead.email,
+        leadPhone: lead.phone,
+        propertyInterest: lead.propertyInterest,
+        budget: lead.budget,
+        appUrl: process.env.NEXTAUTH_URL ?? "http://localhost:3000",
+        leadId: id,
+      });
+      sendMail({ to: agent.email, ...tpl });
+    }
+  }
 
   // Write all detected activity entries
   for (const act of activities) {

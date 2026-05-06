@@ -1,20 +1,6 @@
-import nodemailer from "nodemailer";
+import { Resend } from "resend";
 
-const FROM = process.env.SMTP_FROM ?? process.env.SMTP_USER ?? "noreply@property-crm.local";
-
-function getTransport() {
-  const user = process.env.SMTP_USER;
-  const pass = process.env.SMTP_PASS;
-  const host = process.env.SMTP_HOST ?? "smtp.gmail.com";
-  const port = Number(process.env.SMTP_PORT ?? 587);
-
-  if (!user || !pass) {
-    // No credentials — use ethereal-style test account stub (logs only)
-    return null;
-  }
-
-  return nodemailer.createTransport({ host, port, secure: port === 465, auth: { user, pass } });
-}
+const FROM = process.env.RESEND_FROM ?? "onboarding@resend.dev";
 
 interface MailOptions {
   to: string;
@@ -24,13 +10,14 @@ interface MailOptions {
 }
 
 export async function sendMail(opts: MailOptions): Promise<void> {
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) {
+    console.log(`[mailer] No RESEND_API_KEY — would send to ${opts.to}: ${opts.subject}`);
+    return;
+  }
   try {
-    const transport = getTransport();
-    if (!transport) {
-      console.log(`[mailer] No SMTP credentials — would send to ${opts.to}: ${opts.subject}`);
-      return;
-    }
-    await transport.sendMail({ from: FROM, ...opts });
+    const resend = new Resend(apiKey);
+    await resend.emails.send({ from: FROM, ...opts });
   } catch (err) {
     console.error("[mailer] Failed to send email:", err);
   }
